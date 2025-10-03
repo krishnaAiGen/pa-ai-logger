@@ -83,7 +83,7 @@ export default function LogsPage() {
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">Klara QA Dev Logs</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Klara QA Logs</h1>
             <button
               onClick={() => router.push('/')}
               className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
@@ -98,7 +98,7 @@ export default function LogsPage() {
                 Log Entries ({logs.length})
               </h3>
               <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                All log entries from the klara_qa_dev table
+                All log entries from the configured table
               </p>
             </div>
             

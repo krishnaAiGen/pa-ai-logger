@@ -5,6 +5,8 @@ export async function GET() {
   try {
     const client = await pool.connect();
     
+    const tableName = process.env.TABLE_NAME || 'klara_qa_dev';
+    
     const result = await client.query(`
       SELECT 
         id,
@@ -17,7 +19,7 @@ export async function GET() {
         response_time_ms,
         created_at,
         updated_at
-      FROM klara_qa_dev 
+      FROM ${tableName}
       ORDER BY created_at DESC
     `);
     
