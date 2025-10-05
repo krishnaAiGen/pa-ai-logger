@@ -20,6 +20,7 @@ export default function LogsPage() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
   const router = useRouter();
 
   useEffect(() => {
@@ -49,6 +50,20 @@ export default function LogsPage() {
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + '...';
   };
+
+  const toggleRowExpansion = (logId: number) => {
+    setExpandedRows(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(logId)) {
+        newSet.delete(logId);
+      } else {
+        newSet.add(logId);
+      }
+      return newSet;
+    });
+  };
+
+  const isRowExpanded = (logId: number) => expandedRows.has(logId);
 
   if (loading) {
     return (
@@ -137,45 +152,76 @@ export default function LogsPage() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {logs.map((log) => (
-                    <tr key={log.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {log.id}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatTimestamp(log.timestamp)}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
-                        <div className="truncate" title={log.query}>
-                          {truncateText(log.query, 50)}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
-                        <div className="truncate" title={log.response}>
-                          {truncateText(log.response, 50)}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          log.status === 'success' 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {log.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {log.user_id || '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {log.conversation_id || '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {log.response_time_ms || '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatTimestamp(log.created_at)}
-                      </td>
-                    </tr>
+                    <>
+                      <tr 
+                        key={log.id} 
+                        className="hover:bg-gray-50 cursor-pointer transition-colors"
+                        onClick={() => toggleRowExpansion(log.id)}
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          <div className="flex items-center">
+                            {log.id}
+                            <span className="ml-2 text-gray-400">
+                              {isRowExpanded(log.id) ? '▼' : '▶'}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {formatTimestamp(log.timestamp)}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
+                          <div className="truncate" title={log.query}>
+                            {truncateText(log.query, 50)}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
+                          <div className="truncate" title={log.response}>
+                            {truncateText(log.response, 50)}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            log.status === 'success' 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-red-100 text-red-800'
+                          }`}>
+                            {log.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {log.user_id || '-'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {log.conversation_id || '-'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {log.response_time_ms || '-'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {formatTimestamp(log.created_at)}
+                        </td>
+                      </tr>
+                      {isRowExpanded(log.id) && (
+                        <tr className="bg-gray-50">
+                          <td colSpan={9} className="px-6 py-4">
+                            <div className="space-y-4">
+                              <div>
+                                <h4 className="text-sm font-semibold text-gray-700 mb-2">Full Query:</h4>
+                                <div className="bg-white p-3 rounded border text-sm font-mono text-gray-800 whitespace-pre-wrap break-words">
+                                  {log.query}
+                                </div>
+                              </div>
+                              <div>
+                                <h4 className="text-sm font-semibold text-gray-700 mb-2">Full Response:</h4>
+                                <div className="bg-white p-3 rounded border text-sm font-mono text-gray-800 whitespace-pre-wrap break-words max-h-96 overflow-y-auto">
+                                  {log.response}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </>
                   ))}
                 </tbody>
               </table>
